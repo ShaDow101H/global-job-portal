@@ -1,206 +1,144 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Job Portal</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Supabase CDN (Silinən hissə bərpa olundu!) -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between">
+<script>
+    // Qlobal JS xətalarını tutub ekranda göstərmək üçün xüsusi detektor
+    window.addEventListener('error', function(e) {
+        const loadingEl = document.getElementById('loading');
+        if (loadingEl) {
+            loadingEl.innerHTML = `
+                <div class="p-4 bg-red-500/10 border border-red-500/20 rounded-xl max-w-md mx-auto text-center">
+                    <p class="text-red-500 font-bold mb-1">🚨 JavaScript Xətası Baş Verdi:</p>
+                    <p class="text-slate-300 text-sm font-mono">${e.message}</p>
+                </div>
+            `;
+        }
+    });
+</script>
 
-    <!-- Header -->
-    <header class="border-b border-slate-900 bg-slate-950/50 backdrop-blur sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <span class="text-2xl">🌍</span>
-                <span class="font-bold text-xl tracking-tight bg-gradient-to-r bg-clip-text text-transparent from-blue-400 to-indigo-500">GLOBAL PORTAL</span>
-            </div>
-            <div class="flex gap-2">
-                <button id="btn-All" onclick="filterData('All')" class="px-4 py-2 rounded-lg text-sm font-medium transition bg-blue-600 text-white">All</button>
-                <button id="btn-Internship" onclick="filterData('Internship')" class="px-4 py-2 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white">Internships</button>
-                <button id="btn-Job" onclick="filterData('Job')" class="px-4 py-2 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white">Jobs</button>
-            </div>
-        </div>
-    </header>
+<script>
+    // ⚠️ MƏLUMATLARINI BURA DAXİL ET
+    const SUPABASE_URL = 'https://uqpntwlxffatcmcpejs.supabase.co'; 
+    const SUPABASE_ANON_KEY = 'sb_publishable_ls4nLsyQCPjJV5dGfC_XKA_cCkEqMWH'; // Öz uzun anon key-ini bura yapışdır
 
-    <!-- Main Content -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <!-- Hero Section -->
-        <div class="text-center max-w-3xl mx-auto mb-12">
-            <h1 class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight mb-4">
-                Find Your Dream Career Opportunity
-            </h1>
-            <p class="text-slate-400 text-lg">
-                Explore active internships and jobs from top global companies. Updated in real-time.
-            </p>
-            
-            <!-- Search Bar -->
-            <div class="mt-8 max-w-xl mx-auto">
-                <input type="text" id="searchInput" oninput="searchData()" placeholder="Search by job title, company or location..." 
-                       class="w-full px-5 py-4 bg-slate-900/50 border border-slate-800 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur transition">
-            </div>
-        </div>
+    let allData = [];
+    let currentFilter = 'All';
 
-        <!-- Loading Spinner / Error messages -->
-        <div id="loading" class="flex flex-col items-center justify-center py-20">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
-            <p class="text-slate-400 text-sm">Opportunities are loading from database...</p>
-        </div>
+    // Supabase kitabxanasının yüklənib-yüklənmədiyini yoxlayaq
+    if (!window.supabase) {
+        throw new Error("Supabase CDN kitabxanası yüklənmədi. İnternet bağlantınızı yoxlayın.");
+    }
 
-        <!-- Cards Grid -->
-        <div id="cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
-            <!-- Cards will be injected here by JS -->
-        </div>
-    </main>
+    // Klienti təhlükəsiz şəkildə fərqli adla (supabaseClient) yaradırıq ki, "already been declared" xətası verməsin
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // Verilənləri bazadan çəkmək
+    async function loadOpportunities() {
+        try {
+            const { data, error } = await supabaseClient
+                .from('internships')
+                .select('*')
+                .order('created_at', { ascending: false });
 
-    <!-- Footer -->
-    <footer class="border-t border-slate-900 py-8 text-center text-slate-600 text-sm bg-slate-950/30">
-        <p>&copy; 2026 Global Job Portal. Built with Claude, Supabase & Vercel.</p>
-    </footer>
+            if (error) throw error;
 
-    <!-- JavaScript Code -->
-    <script>
-        // Səhifədəki hər hansı JS xətasını ekranda göstərmək üçün xüsusi detektor
-        window.addEventListener('error', function(e) {
-            const loadingEl = document.getElementById('loading');
-            if (loadingEl) {
-                loadingEl.innerHTML = `
-                    <div class="p-6 bg-red-500/10 border border-red-500/20 rounded-xl max-w-lg mx-auto text-center">
-                        <p class="text-red-500 font-bold mb-2">🚨 JavaScript Xətası:</p>
-                        <p class="text-slate-300 text-sm font-mono">${e.message}</p>
-                    </div>
-                `;
-            }
-        });
+            allData = data;
+            renderCards(allData);
+        } catch (err) {
+            console.error("Error fetching data:", err);
+            document.getElementById('loading').innerHTML = `
+                <div class="p-6 bg-red-500/10 border border-red-500/20 rounded-xl max-w-lg mx-auto text-center">
+                    <p class="text-red-500 font-bold mb-2">❌ Verilənlər Bazası Xətası:</p>
+                    <p class="text-slate-300 text-sm font-mono mb-4">${err.message || err}</p>
+                    <p class="text-xs text-slate-500">İpucu: Supabase-də cədvəlin adının 'internships' olduğundan və RLS (Row Level Security) ayarlarının düzgünlüyündən əmin olun.</p>
+                </div>
+            `;
+        }
+    }
 
-        // ⚠️ SUPABASE MƏLUMATLARINIZI BURA YAZIN
-        const SUPABASE_URL = 'https://uqpntwlxffatcmcpejs.supabase.co'; 
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxcG50d2x4ZWZmYXRjbWNwZWpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQwNTA1MTQsImV4cCI6MjA5OTYyNjUxNH0.elV8yyGSYwhvZ-3Aengv2zARHEsRsao8_E0r87rhKgo'; // <--- Bura Supabase-dən kopyaladığın o çox uzun açarı yapışdır!
+    // Kartları ekrana yazdırmaq
+    function renderCards(items) {
+        const container = document.getElementById('cards-container');
+        const loading = document.getElementById('loading');
+        
+        if (!container || !loading) return;
 
-        let allData = [];
-        let currentFilter = 'All';
+        container.innerHTML = '';
+        loading.classList.add('hidden');
+        container.classList.remove('hidden');
 
-        // CDN yüklənməsini yoxlayırıq
-        if (!window.supabase) {
-            throw new Error("Supabase CDN kitabxanası yüklənə bilmədi. İnternet bağlantınızı yoxlayın.");
+        if(items.length === 0) {
+            container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500">No opportunities found matching your criteria.</div>`;
+            return;
         }
 
-        // Supabase Klientini yaradırıq
-        const { createClient } = window.supabase;
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // Verilənləri bazadan çəkirik
-        async function loadOpportunities() {
-            try {
-                const { data, error } = await supabase
-                    .from('internships')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-
-                allData = data;
-                renderCards(allData);
-            } catch (err) {
-                console.error("Database error:", err);
-                document.getElementById('loading').innerHTML = `
-                    <div class="p-6 bg-red-500/10 border border-red-500/20 rounded-xl max-w-lg mx-auto text-center">
-                        <p class="text-red-500 font-bold mb-2">❌ Verilənlər Bazası Xətası:</p>
-                        <p class="text-slate-300 text-sm font-mono mb-4">${err.message || err}</p>
-                        <p class="text-xs text-slate-500">İpucu: Supabase panelində cədvəl adının 'internships' olduğunu və RLS (Row Level Security) ayarının hər kəsə oxuma icazəsi verdiyini yoxlayın.</p>
-                    </div>
-                `;
-            }
-        }
-
-        // Kartları ekrana çıxarırıq
-        function renderCards(items) {
-            const container = document.getElementById('cards-container');
-            const loading = document.getElementById('loading');
+        items.forEach(item => {
+            const badgeColor = item.type === 'Job' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20';
             
-            container.innerHTML = '';
-            loading.classList.add('hidden');
-            container.classList.remove('hidden');
-
-            if (items.length === 0) {
-                container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500">Heç bir vakansiya tapılmadı.</div>`;
-                return;
-            }
-
-            items.forEach(item => {
-                const badgeColor = item.type === 'Job' 
-                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
-                    : 'bg-blue-500/10 text-blue-400 border-blue-500/20';
-                
-                const card = `
-                    <div class="bg-slate-950 border border-slate-900 rounded-2xl p-6 hover:border-slate-800 transition duration-300 shadow-xl flex flex-col justify-between h-[320px]">
-                        <div>
-                            <div class="flex justify-between items-start gap-2 mb-4">
-                                <span class="px-3 py-1 rounded-full text-xs font-semibold border ${badgeColor}">
-                                    ${item.type || 'Internship'}
-                                </span>
-                                <span class="text-xs text-slate-500">Son Tarix: ${item.deadline || 'N/A'}</span>
-                            </div>
-                            <h3 class="text-xl font-bold text-white mb-1 line-clamp-2">${item.title}</h3>
-                            <p class="text-blue-400 font-medium text-sm mb-3">${item.company}</p>
-                            <p class="text-slate-400 text-sm line-clamp-3 mb-4">${item.description || 'Açıqlama daxil edilməyib.'}</p>
-                        </div>
-                        <div class="flex justify-between items-center pt-4 border-t border-slate-900">
-                            <span class="text-slate-500 text-xs flex items-center gap-1">
-                                📍 ${item.location}
+            const card = `
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 hover:border-slate-700 transition duration-300 shadow-xl flex flex-col justify-between h-[320px]">
+                    <div>
+                        <div class="flex justify-between items-start gap-2 mb-4">
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold border ${badgeColor}">
+                                ${item.type || 'Internship'}
                             </span>
-                            <a href="${item.apply_link}" target="_blank" class="px-4 py-2 bg-slate-900 hover:bg-slate-850 border border-slate-850 text-sm font-semibold rounded-xl transition">
-                                Müraciət et
-                            </a>
+                            <span class="text-xs text-slate-500">Deadline: ${item.deadline || 'N/A'}</span>
                         </div>
+                        <h3 class="text-xl font-bold text-white mb-1 line-clamp-2">${item.title}</h3>
+                        <p class="text-blue-400 font-medium text-sm mb-3">${item.company}</p>
+                        <p class="text-slate-400 text-sm line-clamp-3 mb-4">${item.description || 'No description provided.'}</p>
                     </div>
-                `;
-                container.insertAdjacentHTML('beforeend', card);
-            });
-        }
+                    <div class="flex justify-between items-center pt-4 border-t border-slate-900">
+                        <span class="text-slate-500 text-xs flex items-center gap-1">
+                            📍 ${item.location}
+                        </span>
+                        <a href="${item.apply_link}" target="_blank" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-sm font-semibold rounded-xl transition">
+                            Apply
+                        </a>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', card);
+        });
+    }
 
-        // Süzgəcləmə (Filter)
-        function filterData(type) {
-            currentFilter = type;
-            ['All', 'Internship', 'Job'].forEach(t => {
-                const btn = document.getElementById(`btn-${t}`);
+    // Süzgəcləmə (Filter)
+    function filterData(type) {
+        currentFilter = type;
+        ['All', 'Internship', 'Job'].forEach(t => {
+            const btn = document.getElementById(`btn-${t}`);
+            if (btn) {
                 if (t === type) {
                     btn.className = "px-4 py-2 rounded-lg text-sm font-medium transition bg-blue-600 text-white";
                 } else {
                     btn.className = "px-4 py-2 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white";
                 }
-            });
-            applyFilters();
-        }
-
-        // Axtarış
-        function searchData() {
-            applyFilters();
-        }
-
-        function applyFilters() {
-            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
-            let filtered = allData;
-
-            if (currentFilter !== 'All') {
-                filtered = filtered.filter(item => item.type === currentFilter);
             }
+        });
+        applyFilters();
+    }
 
-            if (searchQuery) {
-                filtered = filtered.filter(item => 
-                    item.title.toLowerCase().includes(searchQuery) ||
-                    item.company.toLowerCase().includes(searchQuery) ||
-                    item.location.toLowerCase().includes(searchQuery)
-                );
-            }
+    // Axtarış
+    function searchData() {
+        applyFilters();
+    }
 
-            renderCards(filtered);
+    function applyFilters() {
+        const searchInput = document.getElementById('searchInput');
+        const searchQuery = searchInput ? searchInput.value.toLowerCase() : '';
+        let filtered = allData;
+
+        if (currentFilter !== 'All') {
+            filtered = filtered.filter(item => item.type === currentFilter);
         }
 
-        window.onload = loadOpportunities;
-    </script>
-</body>
-</html>
+        if (searchQuery) {
+            filtered = filtered.filter(item => 
+                item.title.toLowerCase().includes(searchQuery) ||
+                item.company.toLowerCase().includes(searchQuery) ||
+                item.location.toLowerCase().includes(searchQuery)
+            );
+        }
+
+        renderCards(filtered);
+    }
+
+    window.onload = loadOpportunities;
+</script>
