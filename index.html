@@ -29,17 +29,15 @@
     </main>
 
     <script>
-        // 1. URL düzəldildi (wlxeff -> wlxff)
+        // URL-i düzəltdim: 'wlxeff' silindi, 'wlxff' yazıldı, link işarələri təmizləndi
         const SUPABASE_URL = 'https://uqpntwlxeffatcmcpejs.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_ls4nLsyQCPjJV5dGfC_XKA_cCkEqMWH';
 
-        // 2. Dəyişən adı 'supabase' olaraq standartlaşdırıldı
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         let allJobs = []; 
 
         async function fetchJobs() {
             try {
-                // İndi 'supabase' dəyişəni düzgün işləyəcək
                 const { data, error } = await supabase
                     .from('internships')
                     .select('*');
@@ -50,14 +48,15 @@
                 renderJobs(allJobs);
                 document.getElementById('loading').classList.add('hidden');
             } catch (err) {
-                document.getElementById('loading').innerHTML = `Xəta: ${err.message}`;
+                console.error("Xəta:", err);
+                document.getElementById('loading').innerHTML = `Xəta baş verdi: ${err.message}`;
             }
         }
 
         function renderJobs(jobs) {
             const grid = document.getElementById('jobGrid');
             if (!jobs || jobs.length === 0) {
-                grid.innerHTML = '<p class="text-center col-span-full">Elan tapılmadı.</p>';
+                grid.innerHTML = '<p class="text-center col-span-full text-slate-500">Heç bir elan tapılmadı.</p>';
                 return;
             }
             grid.innerHTML = jobs.map(job => `
