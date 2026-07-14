@@ -64,8 +64,8 @@ const SUPABASE_URL = 'https://uqpntwlxffatcmcpejs.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_ls4nLsyQCPjJV5dGfC_XKA_cCkEqMWH';
       
 
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
+       const { createClient } = window.supabase;
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let allData = [];
         let currentFilter = 'All';
 
