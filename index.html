@@ -1,74 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Internship & Job Portal</title>
-    <!-- Tailwind CSS (Dizayn üçün) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Supabase SDK (Bazaya qoşulmaq üçün) -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body class="bg-slate-900 text-white min-h-screen font-sans">
-
-    <!-- Header Section -->
-    <header class="border-b border-slate-800 bg-slate-950/50 backdrop-blur sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
-            <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-                🎯 GLOBAL PORTAL
-            </h1>
-            <!-- Navigasiya və Filtrlər -->
-            <div class="flex items-center gap-2 bg-slate-900 p-1 rounded-xl border border-slate-800">
-                <button onclick="filterData('All')" id="btn-All" class="px-4 py-2 rounded-lg text-sm font-medium transition bg-blue-600 text-white">All</button>
-                <button onclick="filterData('Internship')" id="btn-Internship" class="px-4 py-2 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white">Internships</button>
-                <button onclick="filterData('Job')" id="btn-Job" class="px-4 py-2 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white">Jobs</button>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="max-w-6xl mx-auto px-6 py-12">
-        <!-- Hero Section -->
-        <div class="text-center mb-12">
-            <h2 class="text-4xl md:text-5xl font-black mb-4">Find Your Dream Career Opportunity</h2>
-            <p class="text-slate-400 text-lg max-w-2xl mx-auto">Explore active internships and jobs from top global companies. Updated in real-time.</p>
-        </div>
-
-        <!-- Search Bar -->
-        <div class="max-w-xl mx-auto mb-12">
-            <input type="text" id="searchInput" oninput="searchData()" placeholder="Search by job title, company or location..." 
-                   class="w-full px-5 py-4 rounded-2xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-lg">
-        </div>
-
-        <!-- Loading State -->
-        <div id="loading" class="text-center py-12">
-            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p class="text-slate-400">Opportunities are loading from database...</p>
-        </div>
-
-        <!-- Cards Grid -->
-        <div id="cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
-            <!-- Cards will be injected here by JS -->
-        </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="border-t border-slate-800 bg-slate-950/20 py-8 text-center text-sm text-slate-500 mt-20">
-        <p>© 2026 Global Job Portal. Built with Claude, Supabase & Vercel.</p>
-    </footer>
-
-    <!-- JavaScript - Supabase Connection -->
+<!-- JavaScript - Supabase Connection with Smart Error Catcher -->
     <script>
-        // ⚠️ SUPABASE MƏLUMATLARINI BURA YAZIN!
-const SUPABASE_URL = 'https://uqpntwlxffatcmcpejs.supabase.co'; 
-const SUPABASE_ANON_KEY = 'sb_publishable_ls4nLsyQCPjJV5dGfC_XKA_cCkEqMWH';
-      
+        // Qlobal JS xətalarını tutub ekranda göstərmək üçün xüsusi detektor
+        window.addEventListener('error', function(e) {
+            const loadingEl = document.getElementById('loading');
+            if (loadingEl) {
+                loadingEl.innerHTML = `
+                    <div class="p-4 bg-red-500/10 border border-red-500/20 rounded-xl max-w-md mx-auto text-center">
+                        <p class="text-red-500 font-bold mb-1">🚨 JavaScript Xətası Baş Verdi:</p>
+                        <p class="text-slate-300 text-sm font-mono">${e.message}</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
 
-       const { createClient } = window.supabase;
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <script>
+        // ⚠️ MƏLUMATLARINI BURA DAXİL ET
+        const SUPABASE_URL = 'https://uqpntwlxffatcmcpejs.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'sb_publishable_ls4nLsyQCPjJV5dGfC_XKA_cCkEqMWH'; // Öz uzun anon key-ini bura yapışdır
+
         let allData = [];
         let currentFilter = 'All';
 
+        // Supabase kitabxanasının yüklənib-yüklənmədiyini yoxlayaq
+        if (!window.supabase) {
+            throw new Error("Supabase CDN kitabxanası yüklənmədi. İnternet bağlantınızı yoxlayın.");
+        }
+
+        // Klienti təhlükəsiz şəkildə yaradaq
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
         // Verilənləri bazadan çəkmək
         async function loadOpportunities() {
             try {
@@ -83,7 +44,13 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 renderCards(allData);
             } catch (err) {
                 console.error("Error fetching data:", err);
-                document.getElementById('loading').innerHTML = `<p class="text-red-500 font-semibold">Error: Could not load data. Check console.</p>`;
+                document.getElementById('loading').innerHTML = `
+                    <div class="p-6 bg-red-500/10 border border-red-500/20 rounded-xl max-w-lg mx-auto text-center">
+                        <p class="text-red-500 font-bold mb-2">❌ Verilənlər Bazası Xətası:</p>
+                        <p class="text-slate-300 text-sm font-mono mb-4">${err.message || err}</p>
+                        <p class="text-xs text-slate-500">İpucu: Supabase-də cədvəlin adının 'internships' olduğundan və RLS (Row Level Security) ayarlarının düzgünlüyündən əmin olun.</p>
+                    </div>
+                `;
             }
         }
 
@@ -134,8 +101,6 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         // Süzgəcləmə (Filter)
         function filterData(type) {
             currentFilter = type;
-            
-            // Düymə dizaynlarını yeniləmək
             ['All', 'Internship', 'Job'].forEach(t => {
                 const btn = document.getElementById(`btn-${t}`);
                 if (t === type) {
@@ -144,7 +109,6 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                     btn.className = "px-4 py-2 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white";
                 }
             });
-
             applyFilters();
         }
 
@@ -153,10 +117,8 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             applyFilters();
         }
 
-        // Həm axtarış, həm də süzgəci eyni anda tətbiq etmək
         function applyFilters() {
             const searchQuery = document.getElementById('searchInput').value.toLowerCase();
-            
             let filtered = allData;
 
             if (currentFilter !== 'All') {
@@ -174,8 +136,5 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             renderCards(filtered);
         }
 
-        // Səhifə yüklənəndə datanı gətir
         window.onload = loadOpportunities;
     </script>
-</body>
-</html>
