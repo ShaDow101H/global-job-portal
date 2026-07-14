@@ -1,147 +1,162 @@
+<!DOCTYPE html>
+<html lang="az">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Job Portal</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<script>
-    // Qlobal JS xətalarını tutub ekranda göstərmək üçün xüsusi detektor
-    window.addEventListener('error', function(e) {
-        const loadingEl = document.getElementById('loading');
-        if (loadingEl) {
-            loadingEl.innerHTML = `
-                <div class="p-4 bg-red-500/10 border border-red-500/20 rounded-xl max-w-md mx-auto text-center">
-                    <p class="text-red-500 font-bold mb-1">🚨 JavaScript Xətası Baş Verdi:</p>
-                    <p class="text-slate-300 text-sm font-mono">${e.message}</p>
-                </div>
-            `;
-        }
-    });
-</script>
+<body class="bg-slate-950 text-white">
 
-<script>
-    // ⚠️ MƏLUMATLARINI BURA DAXİL ET
-    const SUPABASE_URL = 'https://uqpntwlxffatcmcpejs.supabase.co'; 
-    const SUPABASE_ANON_KEY = 'sb_publishable_ls4nLsyQCPjJV5dGfC_XKA_cCkEqMWH'; // Öz uzun anon key-ini bura yapışdır
-
-    let allData = [];
-    let currentFilter = 'All';
-
-    // Supabase kitabxanasının yüklənib-yüklənmədiyini yoxlayaq
-    if (!window.supabase) {
-        throw new Error("Supabase CDN kitabxanası yüklənmədi. İnternet bağlantınızı yoxlayın.");
-    }
-
-    // Klienti təhlükəsiz şəkildə fərqli adla (supabaseClient) yaradırıq ki, "already been declared" xətası verməsin
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-    // Verilənləri bazadan çəkmək
-    async function loadOpportunities() {
-        try {
-            const { data, error } = await supabaseClient
-                .from('internships')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-
-            allData = data;
-            renderCards(allData);
-        } catch (err) {
-            console.error("Error fetching data:", err);
-            document.getElementById('loading').innerHTML = `
-                <div class="p-6 bg-red-500/10 border border-red-500/20 rounded-xl max-w-lg mx-auto text-center">
-                    <p class="text-red-500 font-bold mb-2">❌ Verilənlər Bazası Xətası:</p>
-                    <p class="text-slate-300 text-sm font-mono mb-4">${err.message || err}</p>
-                    <p class="text-xs text-slate-500">İpucu: Supabase-də cədvəlin adının 'internships' olduğundan və RLS (Row Level Security) ayarlarının düzgünlüyündən əmin olun.</p>
-                </div>
-            `;
-        }
-    }
-
-    // Kartları ekrana yazdırmaq
-    function renderCards(items) {
-        const container = document.getElementById('cards-container');
-        const loading = document.getElementById('loading');
-        
-        if (!container || !loading) return;
-
-        container.innerHTML = '';
-        loading.classList.add('hidden');
-        container.classList.remove('hidden');
-
-        if(items.length === 0) {
-            container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500">No opportunities found matching your criteria.</div>`;
-            return;
-        }
-
-        items.forEach(item => {
-            const badgeColor = item.type === 'Job' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20';
-            
-            const card = `
-                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 hover:border-slate-700 transition duration-300 shadow-xl flex flex-col justify-between h-[320px]">
-                    <div>
-                        <div class="flex justify-between items-start gap-2 mb-4">
-                            <span class="px-3 py-1 rounded-full text-xs font-semibold border ${badgeColor}">
-                                ${item.type || 'Internship'}
-                            </span>
-                            <span class="text-xs text-slate-500">Deadline: ${item.deadline || 'N/A'}</span>
-                        </div>
-                        <h3 class="text-xl font-bold text-white mb-1 line-clamp-2">${item.title}</h3>
-                        <p class="text-blue-400 font-medium text-sm mb-3">${item.company}</p>
-                        <p class="text-slate-400 text-sm line-clamp-3 mb-4">${item.description || 'No description provided.'}</p>
+    <script>
+        // Qlobal JS xətalarını tutub ekranda göstərmək üçün xüsusi detektor
+        window.addEventListener('error', function(e) {
+            const loadingEl = document.getElementById('loading');
+            if (loadingEl) {
+                loadingEl.innerHTML = `
+                    <div class="p-4 bg-red-500/10 border border-red-500/20 rounded-xl max-w-md mx-auto text-center">
+                        <p class="text-red-500 font-bold mb-1">🚨 JavaScript Xətası Baş Verdi:</p>
+                        <p class="text-slate-300 text-sm font-mono">${e.message}</p>
                     </div>
-                    <div class="flex justify-between items-center pt-4 border-t border-slate-900">
-                        <span class="text-slate-500 text-xs flex items-center gap-1">
-                            📍 ${item.location}
-                        </span>
-                        <a href="${item.apply_link}" target="_blank" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-sm font-semibold rounded-xl transition">
-                            Apply
-                        </a>
-                    </div>
-                </div>
-            `;
-            container.insertAdjacentHTML('beforeend', card);
-        });
-    }
-
-    // Süzgəcləmə (Filter)
-    function filterData(type) {
-        currentFilter = type;
-        ['All', 'Internship', 'Job'].forEach(t => {
-            const btn = document.getElementById(`btn-${t}`);
-            if (btn) {
-                if (t === type) {
-                    btn.className = "px-4 py-2 rounded-lg text-sm font-medium transition bg-blue-600 text-white";
-                } else {
-                    btn.className = "px-4 py-2 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white";
-                }
+                `;
             }
         });
-        applyFilters();
-    }
+    </script>
 
-    // Axtarış
-    function searchData() {
-        applyFilters();
-    }
+    <script>
+        // ⚠️ MƏLUMATLARINI BURA DAXİL ET
+        const SUPABASE_URL = 'https://uqpntwlxffatcmcpejs.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'sb_publishable_ls4nLsyQCPjJV5dGfC_XKA_cCkEqMWH'; // Öz uzun anon key-ini bura yapışdır
 
-    function applyFilters() {
-        const searchInput = document.getElementById('searchInput');
-        const searchQuery = searchInput ? searchInput.value.toLowerCase() : '';
-        let filtered = allData;
+        let allData = [];
+        let currentFilter = 'All';
 
-        if (currentFilter !== 'All') {
-            filtered = filtered.filter(item => item.type === currentFilter);
+        // Supabase kitabxanasının yüklənib-yüklənmədiyini yoxlayaq
+        if (!window.supabase) {
+            throw new Error("Supabase CDN kitabxanası yüklənmədi. İnternet bağlantınızı yoxlayın.");
         }
 
-        if (searchQuery) {
-            filtered = filtered.filter(item => 
-                item.title.toLowerCase().includes(searchQuery) ||
-                item.company.toLowerCase().includes(searchQuery) ||
-                item.location.toLowerCase().includes(searchQuery)
-            );
+        // Klienti təhlükəsiz şəkildə fərqli adla yaradırıq
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Verilənləri bazadan çəkmək
+        async function loadOpportunities() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('internships')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                allData = data;
+                renderCards(allData);
+            } catch (err) {
+                console.error("Error fetching data:", err);
+                const loadingEl = document.getElementById('loading');
+                if (loadingEl) {
+                    loadingEl.innerHTML = `
+                        <div class="p-6 bg-red-500/10 border border-red-500/20 rounded-xl max-w-lg mx-auto text-center">
+                            <p class="text-red-500 font-bold mb-2">❌ Verilənlər Bazası Xətası:</p>
+                            <p class="text-slate-300 text-sm font-mono mb-4">${err.message || err}</p>
+                            <p class="text-xs text-slate-500">İpucu: Supabase-də cədvəlin adının 'internships' olduğundan və RLS (Row Level Security) ayarlarının düzgünlüyündən əmin olun.</p>
+                        </div>
+                    `;
+                }
+            }
         }
 
-        renderCards(filtered);
-    }
+        // Kartları ekrana yazdırmaq
+        function renderCards(items) {
+            const container = document.getElementById('cards-container');
+            const loading = document.getElementById('loading');
+            
+            if (!container || !loading) return;
 
-    window.onload = loadOpportunities;
-</script>
+            container.innerHTML = '';
+            loading.classList.add('hidden');
+            container.classList.remove('hidden');
+
+            if (items.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500">No opportunities found matching your criteria.</div>`;
+                return;
+            }
+
+            items.forEach(item => {
+                const badgeColor = item.type === 'Job' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+                
+                const card = `
+                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 hover:border-slate-700 transition duration-300 shadow-xl flex flex-col justify-between h-[320px]">
+                        <div>
+                            <div class="flex justify-between items-start gap-2 mb-4">
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold border ${badgeColor}">
+                                    ${item.type || 'Internship'}
+                                </span>
+                                <span class="text-xs text-slate-500">Deadline: ${item.deadline || 'N/A'}</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-white mb-1 line-clamp-2">${item.title}</h3>
+                            <p class="text-blue-400 font-medium text-sm mb-3">${item.company}</p>
+                            <p class="text-slate-400 text-sm line-clamp-3 mb-4">${item.description || 'No description provided.'}</p>
+                        </div>
+                        <div class="flex justify-between items-center pt-4 border-t border-slate-900">
+                            <span class="text-slate-500 text-xs flex items-center gap-1">
+                                📍 ${item.location}
+                            </span>
+                            <a href="${item.apply_link}" target="_blank" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-sm font-semibold rounded-xl transition">
+                                Apply
+                            </a>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', card);
+            });
+        }
+
+        // Süzgəcləmə (Filter)
+        function filterData(type) {
+            currentFilter = type;
+            ['All', 'Internship', 'Job'].forEach(t => {
+                const btn = document.getElementById(`btn-${t}`);
+                if (btn) {
+                    if (t === type) {
+                        btn.className = "px-4 py-2 rounded-lg text-sm font-medium transition bg-blue-600 text-white";
+                    } else {
+                        btn.className = "px-4 py-2 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white";
+                    }
+                }
+            });
+            applyFilters();
+        }
+
+        // Axtarış
+        function searchData() {
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const searchInput = document.getElementById('searchInput');
+            const searchQuery = searchInput ? searchInput.value.toLowerCase() : '';
+            let filtered = allData;
+
+            if (currentFilter !== 'All') {
+                filtered = filtered.filter(item => item.type === currentFilter);
+            }
+
+            if (searchQuery) {
+                filtered = filtered.filter(item => 
+                    item.title.toLowerCase().includes(searchQuery) ||
+                    item.company.toLowerCase().includes(searchQuery) ||
+                    item.location.toLowerCase().includes(searchQuery)
+                );
+            }
+
+            renderCards(filtered);
+        }
+
+        window.onload = loadOpportunities;
+    </script>
+</body>
+</html>
