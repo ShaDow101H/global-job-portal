@@ -189,7 +189,6 @@ async function handleAuth() {
 }
         // Apply düyməsinin yoxlanışı
 async function checkApply(link) {
-    // Session-u yoxlayırıq
     const { data: { session } } = await supabaseClient.auth.getSession();
 
     if (session) {
