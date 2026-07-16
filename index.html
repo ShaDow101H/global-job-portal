@@ -181,6 +181,20 @@ async function handleAuth() {
         toggleModal(false);
     }
 }
+        // Apply düyməsinin yoxlanışı
+async function checkApply(link) {
+    // Session-u yoxlayırıq
+    const { data: { session } } = await supabaseClient.auth.getSession();
+
+    if (session) {
+        // Əgər giriş edibsə, birbaşa linkə get
+        window.open(link, '_blank');
+    } else {
+        // Əgər giriş etməyibsə, Login modalını aç
+        alert("Müraciət etmək üçün əvvəlcə giriş etməlisiniz.");
+        toggleModal(true, 'login');
+    }
+}
     </script>
 </body>
 </html>
