@@ -104,6 +104,43 @@
         });
 
         fetchJobs();
+        // Modal aç/bağla
+function toggleModal(show) {
+    document.getElementById('authModal').classList.toggle('hidden', !show);
+}
+
+// Auth Funksiyası
+async function handleAuth() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+    if (error) {
+        alert(error.message);
+    } else {
+        alert("Uğurla giriş etdiniz!");
+        toggleModal(false);
+    }
+}
+
+// Çıxış funksiyası
+async function logout() {
+    await supabaseClient.auth.signOut();
+    location.reload();
+}
+
+// İstifadəçinin giriş edib-etmədiyini yoxla
+supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (session) {
+        document.getElementById('authButtons').classList.add('hidden');
+        document.getElementById('userProfile').classList.remove('hidden');
+        document.getElementById('userEmail').textContent = session.user.email;
+    } else {
+        document.getElementById('authButtons').classList.remove('hidden');
+        document.getElementById('userProfile').classList.add('hidden');
+    }
+});
     </script>
 </body>
 </html>
