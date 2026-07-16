@@ -109,19 +109,18 @@
         }
 
      function checkApply(link) {
-            if (!link || link === 'undefined' || link === 'null') {
-                alert("Müraciət linki mövcud deyil!");
-                return;
-            }
+    if (!link || link === 'undefined' || link === 'null') {
+        alert("Müraciət linki mövcud deyil!");
+        return;
+    }
 
-            if (currentSession) {
-                // Heç bir async gözləmə olmadığı üçün dərhal açılır!
-                window.open(link, '_blank');
-            } else {
-                alert("Müraciət etmək üçün əvvəlcə giriş etməlisiniz.");
-                toggleModal(true, 'login');
-            }
-        }
+    if (currentSession) {
+        window.open(link, '_blank');
+    } else {
+        alert("Müraciət etmək üçün əvvəlcə giriş etməlisiniz.");
+        toggleModal(true, 'login');
+    }
+}
 document.getElementById('jobGrid').addEventListener('click', function(e) {
     const btn = e.target.closest('.apply-btn');
     if (!btn) return;
