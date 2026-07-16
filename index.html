@@ -6,26 +6,28 @@
     <title>Global Job Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Vercel Web Analytics -->
     <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
 </head>
 <body class="bg-slate-950 text-white min-h-screen">
+    
     <nav class="border-b border-slate-800 p-6">
         <div class="max-w-6xl mx-auto flex justify-between items-center">
             <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">GLOBAL PORTAL</h1>
             <input type="text" id="searchInput" placeholder="İş axtar..." class="bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 w-64 focus:outline-none focus:border-blue-500">
         </div>
 
-        <!-- Naviqasiya hissəsinin sonuna əlavə et -->
-<div id="authButtons" class="flex gap-4">
-<button onclick="toggleModal(true, 'login')" class="text-slate-400 hover:text-white">Giriş</button>
-<button onclick="toggleModal(true, 'register')" class="bg-blue-600 px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Qeydiyyat</button>
-</div>
-<div id="userProfile" class="hidden flex gap-4 items-center">
-    <span id="userEmail" class="text-sm text-slate-400"></span>
-    <button onclick="logout()" class="text-sm text-red-400">Çıxış</button>
-</div>
+        <div class="max-w-6xl mx-auto flex justify-end gap-4 mt-4">
+            <div id="authButtons" class="flex gap-4">
+                <button onclick="toggleModal(true, 'login')" class="text-slate-400 hover:text-white">Giriş</button>
+                <button onclick="toggleModal(true, 'register')" class="bg-blue-600 px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Qeydiyyat</button>
+            </div>
+            <div id="userProfile" class="hidden flex gap-4 items-center">
+                <span id="userEmail" class="text-sm text-slate-400"></span>
+                <button onclick="logout()" class="text-sm text-red-400">Çıxış</button>
+            </div>
+        </div>
     </nav>
+
     <main class="max-w-6xl mx-auto p-6">
         <header class="py-12 text-center">
             <h2 class="text-5xl font-extrabold mb-4">Find Your Dream Career</h2>
@@ -34,150 +36,159 @@
         <div id="loading" class="text-center py-20 text-blue-500 animate-pulse">Məlumatlar yüklənir...</div>
         <div id="jobGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </main>
-    <button id="authBtn" onclick="handleAuth()" class="w-full bg-blue-600 py-3 rounded-lg font-bold mb-4">Daxil ol</button>
-<div id="authModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-    <div class="bg-slate-900 p-8 rounded-2xl border border-slate-700 w-full max-w-sm">
-        <h2 id="modalTitle" class="text-xl font-bold mb-6">Giriş</h2>
-        <input type="email" id="email" placeholder="E-poçt" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-lg mb-4 text-white">
-        <input type="password" id="password" placeholder="Şifrə" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-lg mb-6 text-white">
-        
-        <button id="authBtn" onclick="handleAuth()" class="w-full bg-blue-600 py-3 rounded-lg font-bold mb-4">Daxil ol</button>
-        <button onclick="toggleModal(false)" class="w-full text-slate-500 text-sm">Bağla</button>
-    </div>
-</div>
- <script>
-    const SUPABASE_URL = 'https://uqpntwlxeffatcmcpejs.supabase.co'; 
-    const SUPABASE_KEY = 'sb_publishable_ls4nLsyQCPjJV5dGfC_XKA_cCkEqMWH';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    
-    let allJobs = []; 
-    let currentMode = 'login'; 
 
-    // Məlumatları çək
-    async function fetchJobs() {
-        try {
-            const { data, error } = await supabaseClient
-                .from('internships')
-                .select('*');
-            if (error) throw error;
-            allJobs = data;
-            renderJobs(allJobs);
-            document.getElementById('loading').classList.add('hidden');
-        } catch (err) {
-            document.getElementById('loading').innerHTML = `Xəta: ${err.message}`;
-        }
-    }
-
-    // İşləri ekrana çıxar
-   function renderJobs(jobs) {
-    const grid = document.getElementById('jobGrid');
-    
-    // Əgər iş yoxdursa, boş mesaj göstər
-    if (!jobs || jobs.length === 0) {
-        grid.innerHTML = '<p class="text-center col-span-full">Elan tapılmadı.</p>';
-        return;
-    }
-
-    grid.innerHTML = jobs.map(job => `
-        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 hover:border-blue-500 transition-all group">
-            <h3 class="text-xl font-bold mb-2 group-hover:text-blue-400">${job.title || 'Adsız'}</h3>
-            <p class="text-slate-400 mb-4">${job.company || 'Şirkət adı'}</p>
-            <div class="flex justify-between items-center">
-                <span class="text-xs bg-slate-800 px-3 py-1 rounded-full text-blue-300">Internship</span>
-                
-                <button onclick="checkApply('${job.apply_link}')" class="text-sm font-semibold text-blue-500 hover:underline">
-                    Apply →
-                </button>
-            </div>
+    <div id="authModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 p-8 rounded-2xl border border-slate-700 w-full max-w-sm">
+            <h2 id="modalTitle" class="text-xl font-bold mb-6">Giriş</h2>
+            <input type="email" id="email" placeholder="E-poçt" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-lg mb-4 text-white">
+            <input type="password" id="password" placeholder="Şifrə" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-lg mb-6 text-white">
+            
+            <button id="authBtn" onclick="handleAuth()" class="w-full bg-blue-600 py-3 rounded-lg font-bold mb-4">Daxil ol</button>
+            <button onclick="toggleModal(false)" class="w-full text-slate-500 text-sm">Bağla</button>
         </div>
-    `).join('');
-}
+    </div>
 
-// Bəs düymə basılanda nə baş verir? Bu funksiyanın skriptində olduğundan əmin ol:
-function checkApply(link) {
-    if (link && link !== 'undefined') {
-        window.open(link, '_blank');
-    } else {
-        alert("Link tapılmadı!");
-    }
-}
-
-    // Modal idarəetməsi
-    function toggleModal(show, mode = 'login') {
-        currentMode = mode;
-        const modal = document.getElementById('authModal');
-        const title = document.getElementById('modalTitle');
-        const btn = document.getElementById('authBtn');
+    <script>
+        const SUPABASE_URL = 'https://uqpntwlxeffatcmcpejs.supabase.co'; 
+        const SUPABASE_KEY = 'sb_publishable_ls4nLsyQCPjJV5dGfC_XKA_cCkEqMWH';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
-        modal.classList.toggle('hidden', !show);
-        if (show) {
-            title.textContent = mode === 'login' ? 'Giriş' : 'Qeydiyyat';
-            btn.textContent = mode === 'login' ? 'Daxil ol' : 'Qeydiyyatdan keç';
+        let allJobs = []; 
+        let currentMode = 'login'; 
+        let currentSession = null; // Brauzerin pop-up bloklamasının qarşısını alan qlobal sessiya
+
+        // Mövcud sessiyanı dərhal yaddaşda saxla
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
+            currentSession = session;
+        });
+
+        // Məlumatları çək
+        async function fetchJobs() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('internships')
+                    .select('*');
+                if (error) throw error;
+                allJobs = data;
+                renderJobs(allJobs);
+                document.getElementById('loading').classList.add('hidden');
+            } catch (err) {
+                document.getElementById('loading').innerHTML = `Xəta: ${err.message}`;
+            }
         }
-    }
 
-    // Auth (Giriş/Qeydiyyat)
-    async function handleAuth() {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+        // İşləri ekrana çıxar
+        function renderJobs(jobs) {
+            const grid = document.getElementById('jobGrid');
+            if (!jobs || jobs.length === 0) {
+                grid.innerHTML = '<p class="text-center col-span-full">Elan tapılmadı.</p>';
+                return;
+            }
 
-        let authResponse;
-        if (currentMode === 'login') {
-            authResponse = await supabaseClient.auth.signInWithPassword({ email, password });
-        } else {
-            authResponse = await supabaseClient.auth.signUp({ email, password });
+            grid.innerHTML = jobs.map(job => {
+                // Şirkət adının ilk iki hərfindən dairəvi loqo yaradırıq
+                const companyInitials = job.company ? job.company.substring(0, 2).toUpperCase() : 'JP';
+
+                return `
+                    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 hover:border-blue-500 transition-all group">
+                        <div class="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center mb-4 text-md font-bold text-blue-400">
+                            ${companyInitials}
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 group-hover:text-blue-400">${job.title || 'Adsız'}</h3>
+                        <p class="text-slate-400 mb-4">${job.company || 'Şirkət adı'}</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs bg-slate-800 px-3 py-1 rounded-full text-blue-300">Internship</span>
+                            <button onclick="checkApply('${job.apply_link}')" class="text-sm font-semibold text-blue-500 hover:underline">
+                                Apply →
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
-        const { error } = authResponse;
-        if (error) {
-            alert(error.message);
-        } else {
-            alert(currentMode === 'login' ? "Xoş gəldiniz!" : "Qeydiyyat uğurludur! E-poçtunuzu yoxlayın.");
-            toggleModal(false);
-            location.reload(); // Səhifəni yenilə ki, profil görünsün
+        // Sinxron keçid funksiyası - Brauzer blokerini keçir!
+        function checkApply(link) {
+            if (!link || link === 'undefined' || link === 'null') {
+                alert("Müraciət linki mövcud deyil!");
+                return;
+            }
+
+            if (currentSession) {
+                // Heç bir async gözləmə olmadığı üçün dərhal açılır!
+                window.open(link, '_blank');
+            } else {
+                alert("Müraciət etmək üçün əvvəlcə giriş etməlisiniz.");
+                toggleModal(true, 'login');
+            }
         }
-    }
 
-    // Çıxış
-    async function logout() {
-        await supabaseClient.auth.signOut();
-        location.reload();
-    }
-
-    // Apply düyməsinin yoxlanışı
-    async function checkApply(link) {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session) {
-            window.open(link, '_blank');
-        } else {
-            alert("Müraciət etmək üçün əvvəlcə giriş etməlisiniz.");
-            toggleModal(true, 'login');
+        // Modal idarəetməsi
+        function toggleModal(show, mode = 'login') {
+            currentMode = mode;
+            const modal = document.getElementById('authModal');
+            const title = document.getElementById('modalTitle');
+            const btn = document.getElementById('authBtn');
+            
+            modal.classList.toggle('hidden', !show);
+            if (show) {
+                title.textContent = mode === 'login' ? 'Giriş' : 'Qeydiyyat';
+                btn.textContent = mode === 'login' ? 'Daxil ol' : 'Qeydiyyatdan keç';
+            }
         }
-    }
 
-    // Axtarış
-    document.getElementById('searchInput').addEventListener('input', (e) => {
-        const term = e.target.value.toLowerCase();
-        const filtered = allJobs.filter(job => 
-            (job.title && job.title.toLowerCase().includes(term)) || 
-            (job.company && job.company.toLowerCase().includes(term))
-        );
-        renderJobs(filtered);
-    });
+        // Giriş və Qeydiyyat
+        async function handleAuth() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
 
-    // İstifadəçi statusunu izlə
-    supabaseClient.auth.onAuthStateChange((event, session) => {
-        if (session) {
-            document.getElementById('authButtons').classList.add('hidden');
-            document.getElementById('userProfile').classList.remove('hidden');
-            document.getElementById('userEmail').textContent = session.user.email;
-        } else {
-            document.getElementById('authButtons').classList.remove('hidden');
-            document.getElementById('userProfile').classList.add('hidden');
+            let authResponse;
+            if (currentMode === 'login') {
+                authResponse = await supabaseClient.auth.signInWithPassword({ email, password });
+            } else {
+                authResponse = await supabaseClient.auth.signUp({ email, password });
+            }
+
+            const { data, error } = authResponse;
+            if (error) {
+                alert(error.message);
+            } else {
+                alert(currentMode === 'login' ? "Xoş gəldiniz!" : "Qeydiyyat uğurludur! E-poçtunuzu yoxlayın.");
+                toggleModal(false);
+                location.reload(); 
+            }
         }
-    });
 
-    fetchJobs();
-</script>
+        // Çıxış
+        async function logout() {
+            await supabaseClient.auth.signOut();
+            location.reload();
+        }
+
+        // Axtarış
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allJobs.filter(job => 
+                (job.title && job.title.toLowerCase().includes(term)) || 
+                (job.company && job.company.toLowerCase().includes(term))
+            );
+            renderJobs(filtered);
+        });
+
+        // İstifadəçi statusunun izlənməsi
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            currentSession = session; // Sessiya dəyişdikdə qlobal dəyişəni yeniləyirik
+            if (session) {
+                document.getElementById('authButtons').classList.add('hidden');
+                document.getElementById('userProfile').classList.remove('hidden');
+                document.getElementById('userEmail').textContent = session.user.email;
+            } else {
+                document.getElementById('authButtons').classList.remove('hidden');
+                document.getElementById('userProfile').classList.add('hidden');
+            }
+        });
+
+        fetchJobs();
+    </script>
 </body>
 </html>
