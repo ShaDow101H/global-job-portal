@@ -16,10 +16,10 @@
             <input type="text" id="searchInput" placeholder="İş axtar..." class="bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 w-64 focus:outline-none focus:border-blue-500">
         </div>
 
-        <!-- Modalın içindəki düymələr hissəsi -->
-<div class="flex gap-2">
-    <button onclick="login()" class="flex-1 bg-blue-600 py-3 rounded-lg font-bold">Daxil ol</button>
-    <button onclick="register()" class="flex-1 bg-slate-700 py-3 rounded-lg font-bold">Qeydiyyat</button>
+        <!-- Naviqasiya hissəsinin sonuna əlavə et -->
+<div id="authButtons" class="flex gap-4">
+    <button onclick="toggleModal(true)" class="text-slate-400 hover:text-white">Giriş</button>
+    <button onclick="toggleModal(true)" class="bg-blue-600 px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Qeydiyyat</button>
 </div>
 <div id="userProfile" class="hidden flex gap-4 items-center">
     <span id="userEmail" class="text-sm text-slate-400"></span>
