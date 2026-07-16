@@ -18,8 +18,8 @@
 
         <!-- Naviqasiya hissəsinin sonuna əlavə et -->
 <div id="authButtons" class="flex gap-4">
-    <button onclick="toggleModal(true)" class="text-slate-400 hover:text-white">Giriş</button>
-    <button onclick="toggleModal(true)" class="bg-blue-600 px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Qeydiyyat</button>
+<button onclick="toggleModal(true, 'login')" class="text-slate-400 hover:text-white">Giriş</button>
+<button onclick="toggleModal(true, 'register')" class="bg-blue-600 px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Qeydiyyat</button>
 </div>
 <div id="userProfile" class="hidden flex gap-4 items-center">
     <span id="userEmail" class="text-sm text-slate-400"></span>
@@ -34,6 +34,7 @@
         <div id="loading" class="text-center py-20 text-blue-500 animate-pulse">Məlumatlar yüklənir...</div>
         <div id="jobGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </main>
+    <button id="authBtn" onclick="handleAuth()" class="w-full bg-blue-600 py-3 rounded-lg font-bold mb-4">Daxil ol</button>
 <div id="authModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
     <div class="bg-slate-900 p-8 rounded-2xl border border-slate-700 w-full max-w-sm">
         <h2 id="modalTitle" class="text-xl font-bold mb-6">Giriş</h2>
@@ -142,6 +143,44 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
         document.getElementById('userProfile').classList.add('hidden');
     }
 });
+        let currentMode = 'login'; // Yadda saxlayır: giriş yoxsa qeydiyyat
+
+// Modal aç/bağla
+function toggleModal(show, mode = 'login') {
+    currentMode = mode;
+    const modal = document.getElementById('authModal');
+    const title = document.getElementById('modalTitle');
+    const btn = document.getElementById('authBtn');
+    
+    modal.classList.toggle('hidden', !show);
+    
+    if (show) {
+        title.textContent = mode === 'login' ? 'Giriş' : 'Qeydiyyat';
+        btn.textContent = mode === 'login' ? 'Daxil ol' : 'Qeydiyyatdan keç';
+    }
+}
+
+// Auth Funksiyası (Rejimə görə işləyir)
+async function handleAuth() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    let authResponse;
+    if (currentMode === 'login') {
+        authResponse = await supabaseClient.auth.signInWithPassword({ email, password });
+    } else {
+        authResponse = await supabaseClient.auth.signUp({ email, password });
+    }
+
+    const { data, error } = authResponse;
+
+    if (error) {
+        alert(error.message);
+    } else {
+        alert(currentMode === 'login' ? "Xoş gəldiniz!" : "Qeydiyyat uğurludur! E-poçtunuzu yoxlayın.");
+        toggleModal(false);
+    }
+}
     </script>
 </body>
 </html>
