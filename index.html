@@ -33,7 +33,16 @@
         <div id="loading" class="text-center py-20 text-blue-500 animate-pulse">Məlumatlar yüklənir...</div>
         <div id="jobGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </main>
-
+<div id="authModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 p-8 rounded-2xl border border-slate-700 w-full max-w-sm">
+        <h2 id="modalTitle" class="text-xl font-bold mb-6">Giriş</h2>
+        <input type="email" id="email" placeholder="E-poçt" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-lg mb-4 text-white">
+        <input type="password" id="password" placeholder="Şifrə" class="w-full bg-slate-800 border border-slate-700 p-3 rounded-lg mb-6 text-white">
+        
+        <button id="authBtn" onclick="handleAuth()" class="w-full bg-blue-600 py-3 rounded-lg font-bold mb-4">Daxil ol</button>
+        <button onclick="toggleModal(false)" class="w-full text-slate-500 text-sm">Bağla</button>
+    </div>
+</div>
     <script>
         // Sənin düzgün olan URL-in:
         const SUPABASE_URL = 'https://uqpntwlxeffatcmcpejs.supabase.co'; 
